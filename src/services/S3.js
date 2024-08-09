@@ -15,6 +15,10 @@ class S3 {
      * @param {string} options.permission - The permission string in binary format (e.g., "111").
      */
     setOptions(options) {
+        if (!options?.bucket || !options?.permission) {
+            throw new Error("Bucket name and permissions are require.");
+        }
+
         this.bucket = options.bucket;
         this.permission = options.permission;
     }
@@ -24,12 +28,6 @@ class S3 {
      * @return {Object} The generated IAM policy.
      */
     generatePolicy() {
-        if (!this.bucket || !this.permission) {
-            throw new Error(
-                "Bucket name and permissions must be set before generating policy."
-            );
-        }
-
         const statements = [];
 
         // Interpret the permission string (e.g., 111)
