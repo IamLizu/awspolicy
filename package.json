@@ -1,0 +1,12 @@
+{
+    "name": "awspolicy",
+    "version": "0.0.0",
+    "description": "awspolicy is a command-line tool for generating custom AWS IAM policies with ease. Specify services, resources, and permissions through simple commands to create tailored security policies for your AWS projects.",
+    "main": "src/index.js",
+    "repository": "https://github.com/IamLizu/awspolicy.git",
+    "author": "IamLizu <he@smmahmudulhasan.com>",
+    "license": "MIT",
+    "dependencies": {
+        "commander": "^12.1.0"
+    }
+}
