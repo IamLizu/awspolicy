@@ -18,6 +18,15 @@ async function main() {
          */
         const serviceModule = require(cliOptions.getServicePath());
 
+        /**
+         * Set the options for the service module.
+         * The options are the parsed command line arguments.
+         *
+         * It should have the required options a specific service that has been called with.
+         * So, we simply pass the options to the service module.
+         */
+        serviceModule.setOptions(cliOptions.getOptions());
+
         serviceModule.execute();
     } catch (error) {
         console.error(error);

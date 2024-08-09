@@ -114,6 +114,15 @@ class CliOptions {
     }
 
     /**
+     * Retrieve the parsed command line options.
+     *
+     * @return {Object} The parsed options from the command line arguments.
+     */
+    getOptions() {
+        return this.program.opts();
+    }
+
+    /**
      * Setup parsing and validation of command line arguments.
      */
     init(args) {
