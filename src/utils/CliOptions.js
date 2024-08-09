@@ -35,6 +35,7 @@ class CliOptions {
      */
     configureProgram() {
         this.program
+            .version(version, "-v, --version")
             .option("-s, --service <type>", "AWS service (e.g., s3, ec2)")
             .option("-b, --bucket <name>", "S3 bucket name")
             .option(
