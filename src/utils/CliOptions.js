@@ -57,11 +57,11 @@ class CliOptions {
 
     /**
      * Validate the command line arguments.
+     *
+     * @param {Object} options - The parsed options from the command line arguments.
      * @return {boolean} True if the arguments are valid, false otherwise.
      */
-    validateArgs() {
-        const options = this.program.opts();
-
+    validateArgs(options) {
         // Validate the service option
         if (!options.service) {
             console.error("Error: The --service option is required.");
@@ -85,13 +85,14 @@ class CliOptions {
         });
 
         // Perform custom validations
-        Object.keys(validations.validate).forEach((option) => {
-            const isValid = validations.validate[option](options[option]);
-            if (!isValid) {
-                console.error(validations.errorMessage[option]);
-                process.exit(1);
-            }
-        });
+        validations.validate &&
+            Object.keys(validations.validate).forEach((option) => {
+                const isValid = validations.validate[option](options[option]);
+                if (!isValid) {
+                    console.error(validations.errorMessage[option]);
+                    process.exit(1);
+                }
+            });
 
         return true;
     }
@@ -128,7 +129,9 @@ class CliOptions {
      */
     init(args) {
         this.parse(args);
-        this.validateArgs();
+
+        const options = this.getOptions();
+        this.validateArgs(options);
     }
 }
 
