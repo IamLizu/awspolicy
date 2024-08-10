@@ -18,5 +18,12 @@
     },
     "devDependencies": {
         "jest": "^29.7.0"
-    }
+    },
+    "keywords": [
+        "aws",
+        "iam",
+        "policy",
+        "generator",
+        "cli"
+    ]
 }
