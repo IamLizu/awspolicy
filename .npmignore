@@ -1,3 +1,5 @@
+.github/
 tests/
 node_modules/
 coverage/
+CODE_OF_CONDUCT.md
