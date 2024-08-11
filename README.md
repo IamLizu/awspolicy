@@ -15,7 +15,6 @@ $ npm install awspolicy -g
 -   Generate IAM policies for AWS services with ease
 -   Specify services, resources, and permissions through simple commands
 -   Create tailored security policies for your AWS projects
--   Most importantly, it's _offline_.
 
 ### Currently Supported Services
 
@@ -31,11 +30,11 @@ Options:
   -v, --version                 output the version number
   -s, --service <type>          AWS service (e.g., s3, ecr)
   -b, --bucket <name>           S3 bucket name (required for S3)
-  -rp, --repository <name>      ECR repository name (required for ECR)
+  -rp, --repositories <name>    Comma-separated list of ECR repository names (required for ECR)
   -rg, --region <region>        AWS region (e.g., ap-southeast-2)
   -a, --account-id <accountId>  AWS account ID (e.g., 021704626424)
-  -p, --permission <levels>     Permissions for the selected service
-                                For S3: binary format (e.g., 111)
+  -p, --permission <levels>     Permissions for the selected service.
+                                For S3: binary format (e.g., 111).
                                 For ECR: comma-separated list of actions (e.g., ListImages,PutImage)
   -t, --template <name>         Template for predefined permissions (e.g., generic for ECR)
   -h, --help                    display help for command
