@@ -42,9 +42,13 @@ class ECRService {
      * @param {string} permissions - Comma-separated list of permissions (e.g., "ListImages,GetDownloadUrlForLayer").
      */
     setPermissions(permissions) {
-        this.permissions = permissions
-            .split(",")
-            .map((permission) => `ecr:${permission.trim()}`);
+        if (typeof permissions === "string") {
+            this.permissions = permissions
+                .split(",")
+                .map((permission) => `ecr:${permission.trim()}`);
+        } else {
+            this.permissions = [];
+        }
     }
 
     /**
@@ -74,25 +78,16 @@ class ECRService {
     generatePolicy() {
         if (
             !this.repository ||
-            !this.permissions ||
+            !Array.isArray(this.permissions) ||
+            this.permissions.length === 0 ||
             !this.region ||
             !this.accountId
         ) {
-            console.debug(
-                this.region,
-                this.accountId,
-                this.permissions,
-                this.repository
-            );
             throw new Error(
                 "Repository name, permissions, region, and account ID must be set before generating policy."
             );
         }
 
-        /**
-         * Separate the GetAuthorizationToken action from the other ECR actions.
-         * The GetAuthorizationToken action requires a wildcard (*) resource to authenticate.
-         */
         const policy = {
             Version: "2012-10-17",
             Statement: [
