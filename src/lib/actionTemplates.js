@@ -1,7 +1,6 @@
 const templates = {
     ecr: {
         generic: [
-            "GetAuthorizationToken",
             "BatchCheckLayerAvailability",
             "InitiateLayerUpload",
             "UploadLayerPart",
