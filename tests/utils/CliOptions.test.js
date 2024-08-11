@@ -292,6 +292,20 @@ describe("CliOptions", () => {
     });
 
     describe("ECR Validation", () => {
+        // Mock templates for different services
+        cliOptions.templates = {
+            ecr: {
+                generic: [
+                    "BatchCheckLayerAvailability",
+                    "InitiateLayerUpload",
+                    "UploadLayerPart",
+                ],
+            },
+            s3: {
+                generic: ["GetObject", "PutObject"],
+            },
+        };
+
         beforeEach(() => {
             // Mock the ecrActions for validation
             cliOptions.ecrActions = [
@@ -365,6 +379,118 @@ describe("CliOptions", () => {
                     options.permission
                 );
             expect(isPermissionValid).toBe(false);
+        });
+
+        it("should exit with an error if --region is missing for ECR service", () => {
+            const options = {
+                service: "ecr",
+                repository: "valid-repo",
+                accountId: "021704626424",
+                // Missing region
+            };
+
+            try {
+                cliOptions.validateArgs(options);
+            } catch (error) {
+                expect(console.error).toHaveBeenCalledWith(
+                    "Error: The --region option is required for ECR service."
+                );
+                expect(process.exit).toHaveBeenCalledWith(1);
+                expect(error.message).toBe("process.exit was called");
+            }
+        });
+
+        it("should exit with an error if --account-id is missing for ECR service", () => {
+            const options = {
+                service: "ecr",
+                repository: "valid-repo",
+                region: "ap-southeast-2",
+                // Missing accountId
+            };
+
+            try {
+                cliOptions.validateArgs(options);
+            } catch (error) {
+                expect(console.error).toHaveBeenCalledWith(
+                    "Error: The --account-id option is required for ECR service."
+                );
+                expect(process.exit).toHaveBeenCalledWith(1);
+                expect(error.message).toBe("process.exit was called");
+            }
+        });
+
+        it("should pass validation if --region and --account-id and permission are provided for ECR service", () => {
+            const options = {
+                service: "ecr",
+                repository: "valid-repo",
+                region: "ap-southeast-2",
+                accountId: "021704626424",
+                permission:
+                    "BatchCheckLayerAvailability,InitiateLayerUpload,UploadLayerPart",
+            };
+
+            expect(() => cliOptions.validateArgs(options)).not.toThrow();
+        });
+
+        it("should not require --region and --account-id for non-ECR service", () => {
+            const options = {
+                service: "s3",
+                bucket: "my-bucket",
+                permission: "111",
+                // region and accountId are not required for S3
+            };
+
+            expect(() => cliOptions.validateArgs(options)).not.toThrow();
+        });
+
+        it("should skip permission validation and set permission from a valid template", () => {
+            const options = {
+                service: "ecr",
+                repository: "valid-repo",
+                template: "generic",
+                region: "ap-southeast-2",
+                accountId: "021704626424",
+            };
+
+            const result = cliOptions.validateArgs(options);
+
+            expect(result).toBe(true);
+            expect(options.permission).toBe(
+                "BatchCheckLayerAvailability,InitiateLayerUpload,UploadLayerPart"
+            );
+        });
+
+        it("should exit with an error if the template does not exist for the service", () => {
+            const options = {
+                service: "ecr",
+                repository: "valid-repo",
+                template: "nonexistent",
+                region: "ap-southeast-2",
+                accountId: "021704626424",
+            };
+
+            try {
+                cliOptions.validateArgs(options);
+            } catch (error) {
+                expect(console.error).toHaveBeenCalledWith(
+                    "Error: Template 'nonexistent' not found for service 'ecr'."
+                );
+                expect(process.exit).toHaveBeenCalledWith(1);
+                expect(error.message).toBe("process.exit was called");
+            }
+        });
+
+        it("should skip permission validation if a valid template is provided for S3", () => {
+            const options = {
+                service: "s3",
+                bucket: "my-bucket",
+                template: "generic",
+            };
+
+            const result = cliOptions.validateArgs(options);
+
+            expect(result).toBe(true);
+            expect(options.permission).toBe("GetObject,PutObject");
         });
     });
 });

@@ -89,7 +89,10 @@ class ECRService {
             );
         }
 
-        // Separate the GetAuthorizationToken action from the other ECR actions
+        /**
+         * Separate the GetAuthorizationToken action from the other ECR actions.
+         * The GetAuthorizationToken action requires a wildcard (*) resource to authenticate.
+         */
         const policy = {
             Version: "2012-10-17",
             Statement: [
