@@ -47,7 +47,7 @@ class CliOptions {
                             .split(",")
                             .map((action) => action.trim());
                         return actions.every((action) =>
-                            ecrActions.includes(action)
+                            this.ecrActions.includes(action)
                         );
                     },
                 },
