@@ -3,43 +3,46 @@ const ECRService = require("../../src/services/ECR");
 describe("ECRService", () => {
     beforeEach(() => {
         // Reset the ECRService before each test
-        ECRService.setRepository(null);
+        ECRService.setRepositories(null);
         ECRService.setPermissions(null);
         ECRService.setRegion(null);
         ECRService.setAccountId(null);
     });
 
     describe("setOptions", () => {
-        it("should set repository, permissions, region, and accountId correctly", () => {
+        it("should set repositories, permissions, region, and accountId correctly", () => {
             const options = {
-                repository: "test-repo",
+                repositories: "test-repo1,test-repo2",
                 permission:
                     "BatchCheckLayerAvailability,InitiateLayerUpload,UploadLayerPart",
                 region: "ap-southeast-2",
-                accountId: "021704626424",
+                accountId: "12345789101",
             };
 
             ECRService.setOptions(options);
 
-            expect(ECRService.repository).toBe("test-repo");
+            expect(ECRService.repositories).toEqual([
+                "ecr:test-repo1",
+                "ecr:test-repo2",
+            ]);
             expect(ECRService.permissions).toEqual([
                 "ecr:BatchCheckLayerAvailability",
                 "ecr:InitiateLayerUpload",
                 "ecr:UploadLayerPart",
             ]);
             expect(ECRService.region).toBe("ap-southeast-2");
-            expect(ECRService.accountId).toBe("021704626424");
+            expect(ECRService.accountId).toBe("12345789101");
         });
     });
 
     describe("generatePolicy", () => {
         it("should generate a valid IAM policy when all options are set", () => {
             const options = {
-                repository: "test-repo",
+                repositories: "test-repo1,test-repo2",
                 permission:
                     "BatchCheckLayerAvailability,InitiateLayerUpload,UploadLayerPart",
                 region: "ap-southeast-2",
-                accountId: "021704626424",
+                accountId: "12345789101",
             };
 
             ECRService.setOptions(options);
@@ -60,60 +63,62 @@ describe("ECRService", () => {
                             "ecr:InitiateLayerUpload",
                             "ecr:UploadLayerPart",
                         ],
-                        Resource:
-                            "arn:aws:ecr:ap-southeast-2:021704626424:repository/test-repo",
+                        Resource: [
+                            "arn:aws:ecr:ap-southeast-2:12345789101:repository/ecr:test-repo1",
+                            "arn:aws:ecr:ap-southeast-2:12345789101:repository/ecr:test-repo2",
+                        ],
                     },
                 ],
             });
         });
 
-        it("should throw an error if repository is not set", () => {
+        it("should throw an error if repositories are not set", () => {
             const options = {
                 permission:
                     "BatchCheckLayerAvailability,InitiateLayerUpload,UploadLayerPart",
                 region: "ap-southeast-2",
-                accountId: "021704626424",
+                accountId: "12345789101",
             };
 
             ECRService.setOptions(options);
 
             expect(() => ECRService.generatePolicy()).toThrow(
-                "Repository name, permissions, region, and account ID must be set before generating policy."
+                "Repository names, permissions, region, and account ID must be set before generating policy."
             );
         });
 
         it("should throw an error if permissions are not set", () => {
             const options = {
-                repository: "test-repo",
+                repositories: "test-repo1,test-repo2",
                 region: "ap-southeast-2",
-                accountId: "021704626424",
+                accountId: "12345789101",
             };
 
             ECRService.setOptions(options);
 
             expect(() => ECRService.generatePolicy()).toThrow(
-                "Repository name, permissions, region, and account ID must be set before generating policy."
+                "Repository names, permissions, region, and account ID must be set before generating policy."
             );
         });
 
         it("should throw an error if region is not set", () => {
             const options = {
-                repository: "test-repo",
+                repositories: "test-repo1,test-repo2",
                 permission:
                     "BatchCheckLayerAvailability,InitiateLayerUpload,UploadLayerPart",
-                accountId: "021704626424",
+                accountId: "12345789101",
             };
 
             ECRService.setOptions(options);
 
             expect(() => ECRService.generatePolicy()).toThrow(
-                "Repository name, permissions, region, and account ID must be set before generating policy."
+                "Repository names, permissions, region, and account ID must be set before generating policy."
             );
         });
 
         it("should throw an error if accountId is not set", () => {
             const options = {
-                repository: "test-repo",
+                repositories: "test-repo1,test-repo2",
                 permission:
                     "BatchCheckLayerAvailability,InitiateLayerUpload,UploadLayerPart",
                 region: "ap-southeast-2",
@@ -122,7 +127,7 @@ describe("ECRService", () => {
             ECRService.setOptions(options);
 
             expect(() => ECRService.generatePolicy()).toThrow(
-                "Repository name, permissions, region, and account ID must be set before generating policy."
+                "Repository names, permissions, region, and account ID must be set before generating policy."
             );
         });
     });
@@ -130,11 +135,11 @@ describe("ECRService", () => {
     describe("execute", () => {
         it("should generate and print the IAM policy", () => {
             const options = {
-                repository: "test-repo",
+                repositories: "test-repo1,test-repo2",
                 permission:
                     "BatchCheckLayerAvailability,InitiateLayerUpload,UploadLayerPart",
                 region: "ap-southeast-2",
-                accountId: "021704626424",
+                accountId: "12345789101",
             };
 
             ECRService.setOptions(options);
@@ -162,8 +167,10 @@ describe("ECRService", () => {
                                     "ecr:InitiateLayerUpload",
                                     "ecr:UploadLayerPart",
                                 ],
-                                Resource:
-                                    "arn:aws:ecr:ap-southeast-2:021704626424:repository/test-repo",
+                                Resource: [
+                                    "arn:aws:ecr:ap-southeast-2:12345789101:repository/ecr:test-repo1",
+                                    "arn:aws:ecr:ap-southeast-2:12345789101:repository/ecr:test-repo2",
+                                ],
                             },
                         ],
                     },
