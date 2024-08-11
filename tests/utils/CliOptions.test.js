@@ -1,5 +1,6 @@
 const cliOptions = require("../../src/utils/CliOptions");
 const { program } = require("commander");
+const path = require("path");
 
 // Mock the commander program
 jest.mock("commander", () => {
@@ -57,15 +58,31 @@ describe("CliOptions", () => {
         );
         expect(program.option).toHaveBeenCalledWith(
             "-s, --service <type>",
-            "AWS service (e.g., s3, ec2)"
+            "AWS service (e.g., s3, ecr)"
         );
         expect(program.option).toHaveBeenCalledWith(
             "-b, --bucket <name>",
-            "S3 bucket name"
+            "S3 bucket name (required for S3)"
+        );
+        expect(program.option).toHaveBeenCalledWith(
+            "-rp, --repository <name>",
+            "ECR repository name (required for ECR)"
+        );
+        expect(program.option).toHaveBeenCalledWith(
+            "-rg, --region <region>",
+            "AWS region (e.g., ap-southeast-2)"
+        );
+        expect(program.option).toHaveBeenCalledWith(
+            "-a, --account-id <accountId>",
+            "AWS account ID (e.g., 021704626424)"
         );
         expect(program.option).toHaveBeenCalledWith(
             "-p, --permission <levels>",
-            "Permissions in binary format (e.g., 111)"
+            "Permissions for the selected service. \nFor S3: binary format (e.g., 111). \nFor ECR: comma-separated list of actions (e.g., ListImages,PutImage)"
+        );
+        expect(program.option).toHaveBeenCalledWith(
+            "-t, --template <name>",
+            "Template for predefined permissions (e.g., generic for ECR)"
         );
     });
 
@@ -241,18 +258,26 @@ describe("CliOptions", () => {
     });
 
     it("it should return service name when getServiceName is called", () => {
-        program.opts.mockReturnValue({ service: "s3" });
+        program.opts.mockReturnValue({ service: "S3" });
 
         const serviceName = cliOptions.getServiceName();
 
-        expect(serviceName).toBe("s3");
+        expect(serviceName).toBe("S3");
     });
 
     it("it should return service path when getServicePath is called", () => {
         program.opts.mockReturnValue({ service: "s3" });
 
         const servicePath = cliOptions.getServicePath();
+        const expectedPath = path.join(
+            __dirname,
+            "..",
+            "..",
+            "src",
+            "services",
+            "S3"
+        );
 
-        expect(servicePath).toBe("./services/s3");
+        expect(servicePath).toBe(expectedPath);
     });
 });
