@@ -1,5 +1,7 @@
 const { program: commanderProgram } = require("commander");
 const { version } = require("../../package.json");
+const path = require("path");
+const ecrActions = require("../lib/ecrActions");
 
 /**
  * Class representing command line options.
@@ -11,6 +13,8 @@ class CliOptions {
     constructor(program = commanderProgram) {
         this.program = program;
         this.configureProgram();
+
+        this.ecrActions = ecrActions;
 
         this.serviceValidations = {
             s3: {
@@ -26,6 +30,27 @@ class CliOptions {
                     permission: (value) => /^[01]+$/.test(value),
                 },
             },
+            ecr: {
+                required: ["repository", "permission"],
+                errorMessage: {
+                    repository:
+                        "Error: The --repository option must be a non-empty string.",
+                    permission:
+                        "Error: The --permission option must be a comma-separated list of valid ECR actions.",
+                },
+                validate: {
+                    repository: (value) =>
+                        typeof value === "string" && value.trim().length > 0,
+                    permission: (value) => {
+                        const actions = value
+                            .split(",")
+                            .map((action) => action.trim());
+                        return actions.every((action) =>
+                            ecrActions.includes(action)
+                        );
+                    },
+                },
+            },
             // Add other services and their validation rules here
         };
     }
@@ -36,11 +61,15 @@ class CliOptions {
     configureProgram() {
         this.program
             .version(version, "-v, --version")
-            .option("-s, --service <type>", "AWS service (e.g., s3, ec2)")
-            .option("-b, --bucket <name>", "S3 bucket name")
+            .option("-s, --service <type>", "AWS service (e.g., s3, ecr)")
+            .option("-b, --bucket <name>", "S3 bucket name (required for S3)")
+            .option(
+                "-r, --repository <name>",
+                "ECR repository name (required for ECR)"
+            )
             .option(
                 "-p, --permission <levels>",
-                "Permissions in binary format (e.g., 111)"
+                "Permissions for the selected service. \nFor S3: binary format (e.g., 111). \nFor ECR: comma-separated list of actions (e.g., ListImages,PutImage)"
             )
             .parse(process.argv);
     }
@@ -68,8 +97,8 @@ class CliOptions {
             process.exit(1);
         }
 
-        const validations =
-            this.serviceValidations[options.service.toLowerCase()];
+        const service = options.service.toLowerCase();
+        const validations = this.serviceValidations[service];
 
         if (!validations) {
             console.error(`Error: Unsupported service '${options.service}'.`);
@@ -85,7 +114,7 @@ class CliOptions {
         });
 
         // Perform custom validations
-        validations.validate &&
+        if (validations.validate) {
             Object.keys(validations.validate).forEach((option) => {
                 const isValid = validations.validate[option](options[option]);
                 if (!isValid) {
@@ -93,6 +122,7 @@ class CliOptions {
                     process.exit(1);
                 }
             });
+        }
 
         return true;
     }
@@ -103,7 +133,7 @@ class CliOptions {
      * @returns {string} The service name.
      */
     getServiceName() {
-        return this.program.opts().service;
+        return this.program.opts().service.toUpperCase();
     }
 
     /**
@@ -112,7 +142,8 @@ class CliOptions {
      * @returns {string} The path to the service module.
      */
     getServicePath() {
-        return `./services/${this.getServiceName()}`;
+        const serviceName = this.getServiceName();
+        return path.join(__dirname, "..", "services", serviceName);
     }
 
     /**
