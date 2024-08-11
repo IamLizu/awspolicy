@@ -65,8 +65,16 @@ class CliOptions {
             .option("-s, --service <type>", "AWS service (e.g., s3, ecr)")
             .option("-b, --bucket <name>", "S3 bucket name (required for S3)")
             .option(
-                "-r, --repository <name>",
+                "-rp, --repository <name>",
                 "ECR repository name (required for ECR)"
+            )
+            .option(
+                "-rg, --region <region>",
+                "AWS region (e.g., ap-southeast-2)"
+            )
+            .option(
+                "-a, --account-id <accountId>",
+                "AWS account ID (e.g., 021704626424)"
             )
             .option(
                 "-p, --permission <levels>",
@@ -108,6 +116,23 @@ class CliOptions {
         if (!validations) {
             console.error(`Error: Unsupported service '${options.service}'.`);
             process.exit(1);
+        }
+
+        // Only require region and account ID for ECR service
+        if (service === "ecr") {
+            if (!options.region) {
+                console.error(
+                    "Error: The --region option is required for ECR service."
+                );
+                process.exit(1);
+            }
+
+            if (!options.accountId) {
+                console.error(
+                    "Error: The --account-id option is required for ECR service."
+                );
+                process.exit(1);
+            }
         }
 
         // If a template is provided, skip permission validation
