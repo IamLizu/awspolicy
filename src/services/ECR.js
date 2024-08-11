@@ -5,7 +5,7 @@ const ecrActions = require("../lib/ecrActions");
  */
 class ECRService {
     constructor() {
-        this.repository = null;
+        this.repositories = [];
         this.permission = null;
         this.region = null;
         this.accountId = null;
@@ -17,24 +17,30 @@ class ECRService {
      * Set the repository, permissions, region, and account ID based on the provided options.
      *
      * @param {Object} options - The options object containing the repository, permissions, region, and account ID.
-     * @param {string} options.repository - The ECR repository name.
+     * @param {string} options.repositories - Comma-separated list of ECR repository names.
      * @param {string} options.permission - The comma-separated list of permissions.
      * @param {string} options.region - The AWS region.
-     * @param {string} options['account-id'] - The AWS account ID.
+     * @param {string} options.accountId - The AWS account ID.
      */
     setOptions(options) {
-        this.setRepository(options.repository);
+        this.setRepositories(options.repositories);
         this.setPermissions(options.permission);
         this.setRegion(options.region);
         this.setAccountId(options.accountId);
     }
 
     /**
-     * Set the repository name.
-     * @param {string} repository - The ECR repository name.
+     * Set the repository names.
+     * @param {string} repositories - Comma-separated list of ECR repository names.
      */
-    setRepository(repository) {
-        this.repository = repository;
+    setRepositories(repositories) {
+        if (typeof repositories === "string") {
+            this.repositories = repositories
+                .split(",")
+                .map((permission) => `ecr:${permission.trim()}`);
+        } else {
+            this.repositories = [];
+        }
     }
 
     /**
@@ -68,43 +74,42 @@ class ECRService {
     }
 
     /**
-     * Generate IAM policy based on the repository name, permissions, region, and account ID.
-     * @return {Object} The generated IAM policy.
-     */
-    /**
-     * Generate IAM policy based on the repository name, permissions, region, and account ID.
+     * Generate IAM policy based on the repository names, permissions, region, and account ID.
      * @return {Object} The generated IAM policy.
      */
     generatePolicy() {
         if (
-            !this.repository ||
+            this.repositories.length === 0 ||
             !Array.isArray(this.permissions) ||
             this.permissions.length === 0 ||
             !this.region ||
             !this.accountId
         ) {
             throw new Error(
-                "Repository name, permissions, region, and account ID must be set before generating policy."
+                "Repository names, permissions, region, and account ID must be set before generating policy."
             );
         }
 
-        const policy = {
-            Version: "2012-10-17",
-            Statement: [
-                {
-                    Effect: "Allow",
-                    Action: "ecr:GetAuthorizationToken",
-                    Resource: "*",
-                },
-                {
-                    Effect: "Allow",
-                    Action: this.permissions,
-                    Resource: `arn:aws:ecr:${this.region}:${this.accountId}:repository/${this.repository}`,
-                },
-            ],
-        };
+        const policyStatements = [
+            {
+                Effect: "Allow",
+                Action: "ecr:GetAuthorizationToken",
+                Resource: "*",
+            },
+            {
+                Effect: "Allow",
+                Action: this.permissions,
+                Resource: this.repositories.map(
+                    (repository) =>
+                        `arn:aws:ecr:${this.region}:${this.accountId}:repository/${repository}`
+                ),
+            },
+        ];
 
-        return policy;
+        return {
+            Version: "2012-10-17",
+            Statement: policyStatements,
+        };
     }
 
     /**

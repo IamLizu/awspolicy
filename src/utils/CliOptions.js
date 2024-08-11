@@ -32,15 +32,18 @@ class CliOptions {
                 },
             },
             ecr: {
-                required: ["repository", "permission"],
+                required: ["repositories", "permission", "region", "accountId"],
                 errorMessage: {
-                    repository:
-                        "Error: The --repository option must be a non-empty string.",
+                    repositories:
+                        "Error: The --repositories option must be a comma-separated list of non-empty strings.",
                     permission:
                         "Error: The --permission option must be a comma-separated list of valid ECR actions.",
+                    region: "Error: The --region option is required for ECR service.",
+                    accountId:
+                        "Error: The --account-id option is required for ECR service.",
                 },
                 validate: {
-                    repository: (value) =>
+                    repositories: (value) =>
                         typeof value === "string" && value.trim().length > 0,
                     permission: (value) => {
                         const actions = value
@@ -65,8 +68,8 @@ class CliOptions {
             .option("-s, --service <type>", "AWS service (e.g., s3, ecr)")
             .option("-b, --bucket <name>", "S3 bucket name (required for S3)")
             .option(
-                "-rp, --repository <name>",
-                "ECR repository name (required for ECR)"
+                "-rp, --repositories <name>",
+                "Comma-separated list of ECR repository names (required for ECR)"
             )
             .option(
                 "-rg, --region <region>",
@@ -104,7 +107,6 @@ class CliOptions {
      * @return {boolean} True if the arguments are valid, false otherwise.
      */
     validateArgs(options) {
-        // Validate the service option
         if (!options.service) {
             console.error("Error: The --service option is required.");
             process.exit(1);

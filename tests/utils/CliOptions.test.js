@@ -31,12 +31,6 @@ describe("CliOptions", () => {
     });
 
     describe("S3 Validation", () => {
-        /**
-         * Intentionally storing the original serviceValidations object
-         * to restore it after each test.
-         *
-         * We could also reimport the module in each test, requesting to create issue if change needed.
-         */
         let tempValidations;
 
         const mockArgs = [
@@ -74,8 +68,8 @@ describe("CliOptions", () => {
                 "S3 bucket name (required for S3)"
             );
             expect(program.option).toHaveBeenCalledWith(
-                "-rp, --repository <name>",
-                "ECR repository name (required for ECR)"
+                "-rp, --repositories <name>",
+                "Comma-separated list of ECR repository names (required for ECR)"
             );
             expect(program.option).toHaveBeenCalledWith(
                 "-rg, --region <region>",
@@ -315,19 +309,19 @@ describe("CliOptions", () => {
             ];
         });
 
-        it("should validate the repository and permission options successfully", () => {
+        it("should validate the repositories and permission options successfully", () => {
             const options = {
-                repository: "valid-repo",
+                repositories: "valid-repo1,valid-repo2",
                 permission:
                     "BatchCheckLayerAvailability,InitiateLayerUpload,UploadLayerPart",
             };
 
-            // Validate repository
-            const isRepositoryValid =
-                cliOptions.serviceValidations.ecr.validate.repository(
-                    options.repository
+            // Validate repositories
+            const areRepositoriesValid =
+                cliOptions.serviceValidations.ecr.validate.repositories(
+                    options.repositories
                 );
-            expect(isRepositoryValid).toBe(true);
+            expect(areRepositoriesValid).toBe(true);
 
             // Validate permission
             const isPermissionValid =
@@ -339,22 +333,22 @@ describe("CliOptions", () => {
 
         it("should fail validation for an empty repository", () => {
             const options = {
-                repository: "   ", // Invalid repository name (empty string after trim)
+                repositories: "   ", // Invalid repositories (empty string after trim)
                 permission:
                     "BatchCheckLayerAvailability,InitiateLayerUpload,UploadLayerPart",
             };
 
-            // Validate repository
-            const isRepositoryValid =
-                cliOptions.serviceValidations.ecr.validate.repository(
-                    options.repository
+            // Validate repositories
+            const areRepositoriesValid =
+                cliOptions.serviceValidations.ecr.validate.repositories(
+                    options.repositories
                 );
-            expect(isRepositoryValid).toBe(false);
+            expect(areRepositoriesValid).toBe(false);
         });
 
         it("should fail validation for an invalid permission", () => {
             const options = {
-                repository: "valid-repo",
+                repositories: "valid-repo1,valid-repo2",
                 permission: "InvalidAction,InitiateLayerUpload,UploadLayerPart", // "InvalidAction" is not in the list of valid actions
             };
 
@@ -368,7 +362,7 @@ describe("CliOptions", () => {
 
         it("should fail validation for a mix of valid and invalid permissions", () => {
             const options = {
-                repository: "valid-repo",
+                repositories: "valid-repo1,valid-repo2",
                 permission:
                     "BatchCheckLayerAvailability,InvalidAction,UploadLayerPart", // "InvalidAction" is not in the list of valid actions
             };
@@ -384,7 +378,7 @@ describe("CliOptions", () => {
         it("should exit with an error if --region is missing for ECR service", () => {
             const options = {
                 service: "ecr",
-                repository: "valid-repo",
+                repositories: "valid-repo1,valid-repo2",
                 accountId: "021704626424",
                 // Missing region
             };
@@ -403,7 +397,7 @@ describe("CliOptions", () => {
         it("should exit with an error if --account-id is missing for ECR service", () => {
             const options = {
                 service: "ecr",
-                repository: "valid-repo",
+                repositories: "valid-repo1,valid-repo2",
                 region: "ap-southeast-2",
                 // Missing accountId
             };
@@ -419,10 +413,10 @@ describe("CliOptions", () => {
             }
         });
 
-        it("should pass validation if --region and --account-id and permission are provided for ECR service", () => {
+        it("should pass validation if --region, --account-id, and permission are provided for ECR service", () => {
             const options = {
                 service: "ecr",
-                repository: "valid-repo",
+                repositories: "valid-repo1,valid-repo2",
                 region: "ap-southeast-2",
                 accountId: "021704626424",
                 permission:
@@ -446,7 +440,7 @@ describe("CliOptions", () => {
         it("should skip permission validation and set permission from a valid template", () => {
             const options = {
                 service: "ecr",
-                repository: "valid-repo",
+                repositories: "valid-repo1,valid-repo2",
                 template: "generic",
                 region: "ap-southeast-2",
                 accountId: "021704626424",
@@ -463,7 +457,7 @@ describe("CliOptions", () => {
         it("should exit with an error if the template does not exist for the service", () => {
             const options = {
                 service: "ecr",
-                repository: "valid-repo",
+                repositories: "valid-repo1,valid-repo2",
                 template: "nonexistent",
                 region: "ap-southeast-2",
                 accountId: "021704626424",
