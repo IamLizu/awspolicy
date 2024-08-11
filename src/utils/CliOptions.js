@@ -1,7 +1,7 @@
 const { program: commanderProgram } = require("commander");
 const { version } = require("../../package.json");
 const path = require("path");
-const ecrActions = require("../lib/ecrActions");
+const { ecrActions, actionTemplates } = require("../lib");
 
 /**
  * Class representing command line options.
@@ -15,6 +15,7 @@ class CliOptions {
         this.configureProgram();
 
         this.ecrActions = ecrActions;
+        this.templates = actionTemplates;
 
         this.serviceValidations = {
             s3: {
@@ -71,6 +72,10 @@ class CliOptions {
                 "-p, --permission <levels>",
                 "Permissions for the selected service. \nFor S3: binary format (e.g., 111). \nFor ECR: comma-separated list of actions (e.g., ListImages,PutImage)"
             )
+            .option(
+                "-t, --template <name>",
+                "Template for predefined permissions (e.g., generic for ECR)"
+            )
             .parse(process.argv);
     }
 
@@ -103,6 +108,22 @@ class CliOptions {
         if (!validations) {
             console.error(`Error: Unsupported service '${options.service}'.`);
             process.exit(1);
+        }
+
+        // If a template is provided, skip permission validation
+        if (options.template) {
+            if (
+                !this.templates[service] ||
+                !this.templates[service][options.template]
+            ) {
+                console.error(
+                    `Error: Template '${options.template}' not found for service '${service}'.`
+                );
+                process.exit(1);
+            }
+            options.permission =
+                this.templates[service][options.template].join(",");
+            return true;
         }
 
         // Validate required options
