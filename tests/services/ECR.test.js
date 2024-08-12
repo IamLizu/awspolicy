@@ -22,8 +22,8 @@ describe("ECRService", () => {
             ECRService.setOptions(options);
 
             expect(ECRService.repositories).toEqual([
-                "ecr:test-repo1",
-                "ecr:test-repo2",
+                "test-repo1",
+                "test-repo2",
             ]);
             expect(ECRService.permissions).toEqual([
                 "ecr:BatchCheckLayerAvailability",
@@ -64,8 +64,8 @@ describe("ECRService", () => {
                             "ecr:UploadLayerPart",
                         ],
                         Resource: [
-                            "arn:aws:ecr:ap-southeast-2:12345789101:repository/ecr:test-repo1",
-                            "arn:aws:ecr:ap-southeast-2:12345789101:repository/ecr:test-repo2",
+                            "arn:aws:ecr:ap-southeast-2:12345789101:repository/test-repo1",
+                            "arn:aws:ecr:ap-southeast-2:12345789101:repository/test-repo2",
                         ],
                     },
                 ],
@@ -168,8 +168,8 @@ describe("ECRService", () => {
                                     "ecr:UploadLayerPart",
                                 ],
                                 Resource: [
-                                    "arn:aws:ecr:ap-southeast-2:12345789101:repository/ecr:test-repo1",
-                                    "arn:aws:ecr:ap-southeast-2:12345789101:repository/ecr:test-repo2",
+                                    "arn:aws:ecr:ap-southeast-2:12345789101:repository/test-repo1",
+                                    "arn:aws:ecr:ap-southeast-2:12345789101:repository/test-repo2",
                                 ],
                             },
                         ],

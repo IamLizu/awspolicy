@@ -37,7 +37,7 @@ class ECRService {
         if (typeof repositories === "string") {
             this.repositories = repositories
                 .split(",")
-                .map((permission) => `ecr:${permission.trim()}`);
+                .map((permission) => `${permission.trim()}`);
         } else {
             this.repositories = [];
         }
